@@ -2,6 +2,7 @@ from extensions import db
 from app import app
 from models import Flight, Itinerary, User
 from datetime import datetime
+from bcrypt import bcrypt
 
 def seed_data():
     # Delete existing data
