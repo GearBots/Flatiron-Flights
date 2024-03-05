@@ -1,20 +1,27 @@
-from flask import Flask
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_migrate import Migrate
 from extensions import db  # Import db from extensions.py
+from flask_bcrypt import Bcrypt
+import os
+from dotenv import load_dotenv
+import logging
 # Ensure models are imported after db to avoid uninitialized db usage
 from models import Flight, Itinerary, User
 
+load_dotenv()  # Load environment variables from .env file
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///flights.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
 
+bcrypt = Bcrypt(app)
 db.init_app(app)
 migrate = Migrate(app, db)
 
 CORS(app)
 
+logging.basicConfig(level=logging.DEBUG)
 
 @app.route('/flights', methods=['GET'])
 def get_flights():
@@ -103,6 +110,10 @@ def get_users():
 @app.route('/users', methods=['POST'])
 def create_user():
     data = request.get_json()
+    if 'username' not in data or 'password' not in data:
+        return jsonify({"error": "Missing username or password"}), 400
+    hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+    data['password'] = hashed_password
     user = User(**data)
     db.session.add(user)
     db.session.commit()
@@ -131,6 +142,11 @@ def delete_user(id):
     db.session.delete(user)
     db.session.commit()
     return jsonify({}), 204
+
+
+@app.errorhandler(404)
+def resource_not_found(e):
+    return jsonify(error=str(e)), 404
 
 
 if __name__ == "__main__":

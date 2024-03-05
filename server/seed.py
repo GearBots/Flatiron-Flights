@@ -10,8 +10,9 @@ def seed_data():
     db.session.query(User).delete()
 
     # Add new records
-    user1 = User(username="John Doe", password="password")
-    user2 = User(username="Jane Smith", password="password")
+    hashed_password = bcrypt.generate_password_hash('password').decode('utf-8')
+    user1 = User(username="John Doe", password=hashed_password)
+    user2 = User(username="Jane Smith", password=hashed_password)
 
     flight1 = Flight(flight_number="FL123", origin="City A", destination="City B", departure_time=datetime.strptime("2023-04-01 10:00:00", "%Y-%m-%d %H:%M:%S"))
     flight2 = Flight(flight_number="FL456", origin="City C", destination="City D", departure_time=datetime.strptime("2023-04-02 15:00:00", "%Y-%m-%d %H:%M:%S"))
