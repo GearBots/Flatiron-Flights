@@ -34,15 +34,9 @@ class Itinerary(db.Model, SerializerMixin):
             raise ValueError(f"Itinerary must have a {key}.")
         return value
 
-class User(db.Model, SerializerMixin):
+class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), nullable=False)
-    password = db.Column(db.String(50), nullable=False)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(128), nullable=False)  # Ensure adequate length for hashed passwords
     itineraries = relationship('Itinerary', back_populates='user')
-
-    @validates('username', 'password')
-    def validate_user(self, key, value):
-        if not value:
-            raise ValueError(f"User must have a {key}.")
-        return value

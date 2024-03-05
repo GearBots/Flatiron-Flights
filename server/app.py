@@ -111,7 +111,7 @@ def get_users():
 def create_user():
     data = request.get_json()
     if 'username' not in data or 'password' not in data:
-        return jsonify({"error": "Missing username or password"}), 400
+        abort(400, description="Missing username or password")
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
     data['password'] = hashed_password
     user = User(**data)
